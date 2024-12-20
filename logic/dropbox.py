@@ -56,18 +56,18 @@ def write_to_file(file_path: str, data: List[Record]):
 
 def _get_file(file_name: str):
     try:
-        return pd.read_csv(f"{BASE_DOWNLOAD_DIR}/{file_name}").to_json()
+        return read_from_file(f"{BASE_DOWNLOAD_DIR}/{file_name}")
 
     except FileExistsError:
         dowload_dropbox_file(f"/{DROPBOX_DIR}/{file_name}")
-        return pd.read_csv(f"{BASE_DOWNLOAD_DIR}/{file_name}").to_json()
+        return read_from_file(f"{BASE_DOWNLOAD_DIR}/{file_name}")
 
 
-def get_expense_data() -> dict:
+def get_expense_data() -> list:
     return _get_file(EXPENSES_FILE_NAME)
 
 
-def get_income_data() -> dict:
+def get_income_data() -> list:
     return _get_file(INCOMES_FILE_NAME)
 
 
@@ -124,6 +124,7 @@ def refresh_income_data() -> bool:
     except Exception as e:
         return False
 
+
 def remove_income(id: int) -> bool:
     incomes = read_from_file(f"{BASE_DOWNLOAD_DIR}/{INCOMES_FILE_NAME}", RecordType.Income)
     updated_incomes = [income for income in incomes if int(income.id) != id]
@@ -161,3 +162,8 @@ def create_income(income: Income) -> bool:
     write_to_file(f"{BASE_DOWNLOAD_DIR}/{EXPENSES_FILE_NAME}", incomes)
     return True
 
+def get_expense(id: int) -> Expense:
+    return get_expense_data()[id]
+
+def get_income(id: int) -> Income:
+    return get_income_data()[id]
