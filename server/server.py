@@ -1,5 +1,8 @@
 from flask import Flask
 from server.personal_finance import pf_blueprint
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 

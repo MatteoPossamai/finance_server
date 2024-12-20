@@ -1,19 +1,13 @@
 import requests
-import dotenv
 import csv
 import os
 from typing import List
 from model.record import RecordType, Record, Expense, Income
-import pandas as pd
 
-dotenv.load_dotenv()
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 DROPBOX_DOWNLOAD_URL = os.getenv("DROPBOX_DOWNLOAD_URL")
 BASE_DOWNLOAD_DIR = os.getenv("BASE_DOWNLOAD_DIR")
-EXPENSES_FILE_NAME = os.getenv("EXPENSES_FILE_NAME")
-INCOMES_FILE_NAME = os.getenv("INCOMES_FILE_NAME")
 DROPBOX_DIR = os.getenv("DROPBOX_DIR")
-
 
 def dowload_dropbox_file(file: str):
     headers = {
@@ -54,9 +48,9 @@ def write_to_file(file_path: str, data: List[Record]):
             writer.writerow(record.to_list())
 
 
-def _get_file(file_name: str):
+def _get_file(file_name: str, type):
     try:
-        return read_from_file(f"{BASE_DOWNLOAD_DIR}/{file_name}")
+        return read_from_file(f"{BASE_DOWNLOAD_DIR}/{file_name}", type)
 
     except FileExistsError:
         dowload_dropbox_file(f"/{DROPBOX_DIR}/{file_name}")
@@ -64,14 +58,17 @@ def _get_file(file_name: str):
 
 
 def get_expense_data() -> list:
-    return _get_file(EXPENSES_FILE_NAME)
+    EXPENSES_FILE_NAME = os.getenv("EXPENSES_FILE_NAME")
+    return _get_file(EXPENSES_FILE_NAME, RecordType.Expense)
 
 
 def get_income_data() -> list:
-    return _get_file(INCOMES_FILE_NAME)
+    INCOMES_FILE_NAME = os.getenv("INCOMES_FILE_NAME")
+    return _get_file(INCOMES_FILE_NAME, RecordType.Income)
 
 
 def refresh_expense_data() -> bool:
+    EXPENSES_FILE_NAME = os.getenv("EXPENSES_FILE_NAME")
     try:
         dowload_dropbox_file(f"/{DROPBOX_DIR}/{EXPENSES_FILE_NAME}")
         return True
@@ -80,6 +77,7 @@ def refresh_expense_data() -> bool:
 
 
 def remove_expense(id: int) -> bool:
+    EXPENSES_FILE_NAME = os.getenv("EXPENSES_FILE_NAME")
     expenses = read_from_file(f"{BASE_DOWNLOAD_DIR}/{EXPENSES_FILE_NAME}", RecordType.Expense)
     updated_expenses = [expense for expense in expenses if int(expense.id) != id]
 
@@ -91,6 +89,7 @@ def remove_expense(id: int) -> bool:
 
 
 def modify_expense(id: int, expense: Expense) -> bool:
+    EXPENSES_FILE_NAME = os.getenv("EXPENSES_FILE_NAME")
     expenses = read_from_file(f"{BASE_DOWNLOAD_DIR}/{EXPENSES_FILE_NAME}", RecordType.Expense)
     updated = False
 
@@ -108,6 +107,7 @@ def modify_expense(id: int, expense: Expense) -> bool:
 
 
 def create_expense(expense: Expense) -> bool:
+    EXPENSES_FILE_NAME = os.getenv("EXPENSES_FILE_NAME")
     expenses = read_from_file(f"{BASE_DOWNLOAD_DIR}/{EXPENSES_FILE_NAME}", RecordType.Expense)
     num_exp = len(expenses)
     expense.id = num_exp
@@ -118,6 +118,7 @@ def create_expense(expense: Expense) -> bool:
 
 
 def refresh_income_data() -> bool:
+    INCOMES_FILE_NAME = os.getenv("INCOMES_FILE_NAME")
     try:
         dowload_dropbox_file(f"/{DROPBOX_DIR}/{INCOMES_FILE_NAME}")
         return True
@@ -126,6 +127,7 @@ def refresh_income_data() -> bool:
 
 
 def remove_income(id: int) -> bool:
+    INCOMES_FILE_NAME = os.getenv("INCOMES_FILE_NAME")
     incomes = read_from_file(f"{BASE_DOWNLOAD_DIR}/{INCOMES_FILE_NAME}", RecordType.Income)
     updated_incomes = [income for income in incomes if int(income.id) != id]
 
@@ -137,6 +139,7 @@ def remove_income(id: int) -> bool:
 
 
 def modify_income(id: int, income: Income) -> bool:
+    INCOMES_FILE_NAME = os.getenv("INCOMES_FILE_NAME")
     incomes = read_from_file(f"{BASE_DOWNLOAD_DIR}/{INCOMES_FILE_NAME}", RecordType.Income)
     updated = False
 
@@ -154,6 +157,8 @@ def modify_income(id: int, income: Income) -> bool:
 
 
 def create_income(income: Income) -> bool:
+    EXPENSES_FILE_NAME = os.getenv("EXPENSES_FILE_NAME")
+    INCOMES_FILE_NAME = os.getenv("INCOMES_FILE_NAME")
     incomes = read_from_file(f"{BASE_DOWNLOAD_DIR}/{INCOMES_FILE_NAME}", RecordType.Income)
     num_exp = len(incomes)
     income.id = num_exp
