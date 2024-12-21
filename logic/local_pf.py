@@ -4,7 +4,6 @@ from typing import List
 from model.record import RecordType, Record, Expense, Income
 from logic.dropbox import DropBoxManager
 
-DROPBOX_DIR = os.getenv("DROPBOX_DIR")
 ENV=os.getenv("ENV", "dev")
 DROPBOX_LOCAL_DATA_FOLDER=os.getenv("DROPBOX_LOCAL_DATA_FOLDER")
 
