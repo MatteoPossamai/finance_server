@@ -27,6 +27,7 @@ def get_remote(file_name: str):
     def decorator(function):
         def wrapper(*args, **kwargs):
             if ENV != "test":
+                print(file_name)
                 dm = DropBoxManager()
                 success = dm.download_file(file_name)
                 if not success:

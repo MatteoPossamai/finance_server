@@ -21,6 +21,7 @@ class DropBoxManager:
         ) as dbx:
             response: requests.models.Response
             _, response = dbx.files_download(f"/{file}")
+            print(file)
 
             local_file_path = os.path.join(DROPBOX_LOCAL_DATA_FOLDER, os.path.basename(file))
 
