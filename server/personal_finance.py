@@ -40,7 +40,7 @@ def modify_expense(id: int):
 
 @pf_blueprint.route("/expense/<int:id>", methods=["DELETE"])
 def delete_expense(id: int):
-    success = local_pf(id)
+    success = local_pf.remove_expense(id)
     return jsonify({"res": success})
 
 
@@ -67,7 +67,7 @@ def create_income():
 def modify_income(id: int):
     data = json.loads(request.data)
     income = Income(id=id, **data)
-    success = local_pf.modify_expense(id, income)
+    success = local_pf.modify_income(id, income)
     return jsonify({"res": success})
 
 

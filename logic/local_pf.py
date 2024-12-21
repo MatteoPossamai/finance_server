@@ -4,14 +4,14 @@ from typing import List
 from model.record import RecordType, Record, Expense, Income
 from logic.dropbox import DropBoxManager
 
-BASE_DOWNLOAD_DIR = os.getenv("BASE_DOWNLOAD_DIR")
 DROPBOX_DIR = os.getenv("DROPBOX_DIR")
 ENV=os.getenv("ENV", "dev")
+DROPBOX_LOCAL_DATA_FOLDER=os.getenv("DROPBOX_LOCAL_DATA_FOLDER")
 
 def upload_updates(file_name: str):
     def decorator(function):
         def wrapper(*args, **kwargs):
-            result = function()
+            result = function(*args, **kwargs)
             if ENV != "test":
                 dm = DropBoxManager()
                 success = dm.upload_file(file_name)
@@ -32,7 +32,7 @@ def get_remote(file_name: str):
                 success = dm.download_file(file_name)
                 if not success:
                     return success
-            return function()
+            return function(*args, **kwargs)
 
         return wrapper
 
@@ -64,10 +64,10 @@ def write_to_file(file_path: str, data: List[Record]):
 
 def _get_file(file_name: str, type):
     try:
-        return read_from_file(f"{BASE_DOWNLOAD_DIR}/{file_name}", type)
+        return read_from_file(f"{DROPBOX_LOCAL_DATA_FOLDER}/{file_name}", type)
 
     except FileExistsError:
-        return read_from_file(f"{BASE_DOWNLOAD_DIR}/{file_name}")
+        return read_from_file(f"{DROPBOX_LOCAL_DATA_FOLDER}/{file_name}")
 
 
 def get_expense_data() -> list:
@@ -76,7 +76,7 @@ def get_expense_data() -> list:
 
 
 def get_income_data() -> list:
-    DROPBOX_INCOMES_FILE_NAME = os.getenv("INCOMES_FILE_NAME")
+    DROPBOX_INCOMES_FILE_NAME = os.getenv("DROPBOX_INCOMES_FILE_NAME")
     return _get_file(DROPBOX_INCOMES_FILE_NAME, RecordType.Income)
 
 
@@ -89,14 +89,14 @@ def refresh_expense_data() -> bool:
 def remove_expense(id: int) -> bool:
     DROPBOX_EXPENSES_FILE_NAME = os.getenv("DROPBOX_EXPENSES_FILE_NAME")
     expenses = read_from_file(
-        f"{BASE_DOWNLOAD_DIR}/{DROPBOX_EXPENSES_FILE_NAME}", RecordType.Expense
+        f"{DROPBOX_LOCAL_DATA_FOLDER}/{DROPBOX_EXPENSES_FILE_NAME}", RecordType.Expense
     )
     updated_expenses = [expense for expense in expenses if int(expense.id) != id]
 
     if len(expenses) == len(updated_expenses):
         return False
 
-    write_to_file(f"{BASE_DOWNLOAD_DIR}/{DROPBOX_EXPENSES_FILE_NAME}", updated_expenses)
+    write_to_file(f"{DROPBOX_LOCAL_DATA_FOLDER}/{DROPBOX_EXPENSES_FILE_NAME}", updated_expenses)
     return True
 
 
@@ -104,7 +104,7 @@ def remove_expense(id: int) -> bool:
 def modify_expense(id: int, expense: Expense) -> bool:
     DROPBOX_EXPENSES_FILE_NAME = os.getenv("DROPBOX_EXPENSES_FILE_NAME")
     expenses = read_from_file(
-        f"{BASE_DOWNLOAD_DIR}/{DROPBOX_EXPENSES_FILE_NAME}", RecordType.Expense
+        f"{DROPBOX_LOCAL_DATA_FOLDER}/{DROPBOX_EXPENSES_FILE_NAME}", RecordType.Expense
     )
     updated = False
 
@@ -116,8 +116,7 @@ def modify_expense(id: int, expense: Expense) -> bool:
 
     if not updated:
         return False
-
-    write_to_file(f"{BASE_DOWNLOAD_DIR}/{DROPBOX_EXPENSES_FILE_NAME}", expenses)
+    write_to_file(f"{DROPBOX_LOCAL_DATA_FOLDER}/{DROPBOX_EXPENSES_FILE_NAME}", expenses)
     return updated
 
 
@@ -125,13 +124,13 @@ def modify_expense(id: int, expense: Expense) -> bool:
 def create_expense(expense: Expense) -> bool:
     DROPBOX_EXPENSES_FILE_NAME = os.getenv("DROPBOX_EXPENSES_FILE_NAME")
     expenses = read_from_file(
-        f"{BASE_DOWNLOAD_DIR}/{DROPBOX_EXPENSES_FILE_NAME}", RecordType.Expense
+        f"{DROPBOX_LOCAL_DATA_FOLDER}/{DROPBOX_EXPENSES_FILE_NAME}", RecordType.Expense
     )
     num_exp = len(expenses)
     expense.id = num_exp
     expenses.append(expense)
 
-    write_to_file(f"{BASE_DOWNLOAD_DIR}/{DROPBOX_EXPENSES_FILE_NAME}", expenses)
+    write_to_file(f"{DROPBOX_LOCAL_DATA_FOLDER}/{DROPBOX_EXPENSES_FILE_NAME}", expenses)
     return True
 
 
@@ -143,20 +142,20 @@ def refresh_income_data() -> bool:
 @upload_updates(os.getenv("DROPBOX_INCOMES_FILE_NAME"))
 def remove_income(id: int) -> bool:
     DROPBOX_INCOMES_FILE_NAME = os.getenv("DROPBOX_INCOMES_FILE_NAME")
-    incomes = read_from_file(f"{BASE_DOWNLOAD_DIR}/{DROPBOX_INCOMES_FILE_NAME}", RecordType.Income)
+    incomes = read_from_file(f"{DROPBOX_LOCAL_DATA_FOLDER}/{DROPBOX_INCOMES_FILE_NAME}", RecordType.Income)
     updated_incomes = [income for income in incomes if int(income.id) != id]
 
     if len(incomes) == len(updated_incomes):
         return False
 
-    write_to_file(f"{BASE_DOWNLOAD_DIR}/{DROPBOX_INCOMES_FILE_NAME}", updated_incomes)
+    write_to_file(f"{DROPBOX_LOCAL_DATA_FOLDER}/{DROPBOX_INCOMES_FILE_NAME}", updated_incomes)
     return True
 
 
 @upload_updates(os.getenv("DROPBOX_INCOMES_FILE_NAME"))
 def modify_income(id: int, income: Income) -> bool:
     DROPBOX_INCOMES_FILE_NAME = os.getenv("DROPBOX_INCOMES_FILE_NAME")
-    incomes = read_from_file(f"{BASE_DOWNLOAD_DIR}/{DROPBOX_INCOMES_FILE_NAME}", RecordType.Income)
+    incomes = read_from_file(f"{DROPBOX_LOCAL_DATA_FOLDER}/{DROPBOX_INCOMES_FILE_NAME}", RecordType.Income)
     updated = False
 
     for i, existing_incomes in enumerate(incomes):
@@ -168,19 +167,19 @@ def modify_income(id: int, income: Income) -> bool:
     if not updated:
         return False
 
-    write_to_file(f"{BASE_DOWNLOAD_DIR}/{DROPBOX_INCOMES_FILE_NAME}", incomes)
+    write_to_file(f"{DROPBOX_LOCAL_DATA_FOLDER}/{DROPBOX_INCOMES_FILE_NAME}", incomes)
     return updated
 
 
 @upload_updates(os.getenv("DROPBOX_INCOMES_FILE_NAME"))
 def create_income(income: Income) -> bool:
     DROPBOX_INCOMES_FILE_NAME = os.getenv("DROPBOX_INCOMES_FILE_NAME")
-    incomes = read_from_file(f"{BASE_DOWNLOAD_DIR}/{DROPBOX_INCOMES_FILE_NAME}", RecordType.Income)
+    incomes = read_from_file(f"{DROPBOX_LOCAL_DATA_FOLDER}/{DROPBOX_INCOMES_FILE_NAME}", RecordType.Income)
     num_exp = len(incomes)
     income.id = num_exp
     incomes.append(income)
 
-    write_to_file(f"{BASE_DOWNLOAD_DIR}/{DROPBOX_INCOMES_FILE_NAME}", incomes)
+    write_to_file(f"{DROPBOX_LOCAL_DATA_FOLDER}/{DROPBOX_INCOMES_FILE_NAME}", incomes)
     return True
 
 
