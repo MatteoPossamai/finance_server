@@ -23,6 +23,7 @@ class TestPFCrud:
         with open(".env.test", "w") as f:
             f.write(f"DROPBOX_EXPENSES_FILE_NAME={self.exp_test}\n")
             f.write(f"DROPBOX_INCOMES_FILE_NAME={self.inc_test}\n")
+            f.write(f"ENV=\"test\"\n")
 
         load_dotenv(".env.test", override=True)
 

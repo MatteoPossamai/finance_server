@@ -3,3 +3,4 @@
 .env.test
 /venv
 __pycache__/
+.vercel
